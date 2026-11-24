@@ -19,6 +19,7 @@ It reaches the QR sign-in screen; signing in with the Steam mobile app works.
 | Slow renderer on A53 + software raster | `killing unresponsive browser`, "error (#2) while rendering" | `--disable-hang-monitor` appended in the wrapper |
 | No window manager | main window created but never mapped | openbox |
 | 1 GB RAM | - | 2 GB swap file on the ext4 root partition |
+| Built-in pad is `muOS-Keys` with sticks on ABS_Z/RX/RY/RZ | SDL would mix up sticks and triggers | `padmap` re-exposes it through uinput as an Xbox 360 pad (button meaning from muOS's own gamecontrollerdb entry); the raw device is hidden from the steam user |
 | exFAT data partition | no Linux permissions/symlinks | 10 GB ext2 loop image `/mnt/mmc/steamrg.img` mounted at `/opt/steamrg` |
 
 ## Layout on the device
@@ -31,7 +32,8 @@ It reaches the QR sign-in screen; signing in with the Steam mobile app works.
 ## Running
 
 ```
-adb shell /opt/steamrg/start.sh      # mounts, stops the muOS frontend, Xvfb + fbblit + openbox + Steam
+adb shell /opt/steamrg/start.sh      # mounts, stops the muOS frontend, Xvfb + fbblit + openbox + padmap + Steam
+adb shell 'echo gamepadui > /opt/steamrg/ui'   # Big Picture from now on (GEOM=640x480 renders at panel size)
 adb shell /opt/steamrg/stop.sh       # stops Steam (add "all" to stop Xvfb and the blitter too)
 powershell -File shot.ps1            # grabs fb0 to fb.png
 ```
@@ -49,3 +51,13 @@ The first client start re-downloads the package (~670 MB) because no `.installed
 
 - Client start to web helper: ~1.5 min. Web helper to login window: ~3-5 min.
 - QR sign-in to main window loaded: ~10-15 min (before the taskset fix).
+
+## Licenses
+
+GPL-3.0-or-later (see `LICENSE`). `rootfs/lse-emu/lse_emu.c` is from
+[SildurFX/LSE-Emu](https://github.com/SildurFX/LSE-Emu) (GPL-3.0) via DroidDeck's `feat/lse-emu` branch, and
+`rootfs/sysv/sysv.c` is DroidDeck's SysV IPC preload (GPL-3.0).
+
+## Next
+
+A flashable SteamOS-style image with a mainline kernel is in progress in a separate project (steamos-rg40xx).
