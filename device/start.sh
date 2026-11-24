@@ -12,8 +12,16 @@ pkill -9 -f /opt/muos/frontend/muxfrontend
 sleep 1
 # Steam (user steam) reads the built-in controls and creates virtual pads.
 [ -e /dev/uinput ] || modprobe uinput 2>/dev/null
-chmod 666 /dev/input/event* /dev/uinput 2>/dev/null
+chmod 666 /dev/uinput
 C="chroot $R /usr/bin/env -i PATH=/usr/local/bin:/usr/bin:/bin HOME=/root LANG=en_US.UTF-8"
+pgrep -f '^/usr/local/bin/padmap' >/dev/null || { setsid $C /usr/local/bin/padmap >/opt/steamrg/padmap.log 2>&1 </dev/null & sleep 1; }
+# Steam sees only the remapped pad; the raw one stays readable by muOS's root daemons.
+for dev in /sys/class/input/event*; do
+  case $(cat "$dev/device/name") in
+    muOS-Keys) chmod 600 "/dev/input/${dev##*/}" ;;
+    *) chmod 666 "/dev/input/${dev##*/}" ;;
+  esac
+done
 pgrep -f '^Xvfb :0' >/dev/null || { setsid $C Xvfb :0 -screen 0 ${GEOM}x24 -nolisten tcp -ac -extension MIT-SHM >/opt/steamrg/xvfb.log 2>&1 </dev/null & sleep 3; }
 pgrep -f '^/usr/local/bin/fbblit' >/dev/null || { setsid $C DISPLAY=:0 /usr/local/bin/fbblit 150 >/opt/steamrg/fbblit.log 2>&1 </dev/null & }
 pgrep -x openbox >/dev/null || { setsid $C DISPLAY=:0 openbox >/opt/steamrg/openbox.log 2>&1 </dev/null & }

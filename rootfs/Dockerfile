@@ -33,6 +33,8 @@ RUN mkdir -p /usr/local/lib/sysv && gcc -shared -fPIC -O2 -Wall -pthread -march=
 
 COPY rootfs/fbblit/fbblit.c /usr/local/src/fbblit.c
 RUN gcc -O2 -Wall -o /usr/local/bin/fbblit /usr/local/src/fbblit.c -lX11
+COPY rootfs/padmap/padmap.c /usr/local/src/padmap.c
+RUN gcc -O2 -Wall -o /usr/local/bin/padmap /usr/local/src/padmap.c
 
 RUN useradd -m -s /bin/bash steam
 COPY chroot/ /usr/local/bin/
